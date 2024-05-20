@@ -31,7 +31,7 @@ watch: ## 🔥 Run the server with reloading
 
 run: ## 🚀 Run the server
 	@figlet $@ || true
-	@go run htmx-go-chat/app
+	@go run goping/app
 
 run-container: ## 📦 Run from container
 	@figlet $@ || true
@@ -40,7 +40,7 @@ run-container: ## 📦 Run from container
 
 build: ## 🔨 Build the server binary only
 	@figlet $@ || true
-	@go build -o ./bin/server htmx-go-chat/app
+	@go build -o ./bin/server goping/app
 
 lint: ## 🔍 Lint & format check only, sets exit code on error for CI
 	@figlet $@ || true

@@ -13,11 +13,14 @@
     hx-swap="delete swap:0.5s"
   {{ end }}>
 
-  <div class="message-header is-flex is-size-7">
+  <!-- <div class="message-header is-flex is-size-7">
     <p>{{ .username }}</p>
     <p>{{ .time }}</p>
+  </div> -->
+  <div class="message-body p-3">{{ .message }}
+    <!-- <p>{{ .username }}</p> -->
+    <div class="message-time">{{ .time }}</div>
   </div>
-  <div class="message-body p-3">{{ .message }}</div>
   
 </article>
 

@@ -11,10 +11,13 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    background-color: #0a0b17  !important;
   }
-
+  .has-background-info-dark {
+    background-color: #0b2133 !important;
+  }
   .is-success {
-    background-color: #2bb34f !important;
+    background-color: #0b2133 !important;
   }
 
   article {
@@ -45,8 +48,21 @@
     border-top-left-radius: 10px;
   }
 
+  .message-time {
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+    position: relative;
+    font-size: 0.6rem;
+    left: 92% !important;
+  }
+
+  .tooltip:not(.shown) {
+          display: none;
+      }
+
   #chat {
     overflow-y: scroll;
+    overflow-x: hidden;
     margin: 0.1rem;
     padding: 0.1rem;
     flex-grow: 1;
@@ -73,12 +89,29 @@
     height: 88vh;
   }
 
+  .textarea {
+    background: #292d2a;
+    color:rgb(166, 175, 183);
+  }
+
   .topbox {
     border-radius: 10px;
     padding: 0.8rem;
-    background-color: #d6d6d6;
+    background-color: #2b2929;
     display: flex;
     margin-bottom: 0.8rem;
+  }
+
+  .message.is-primary .message-body {
+    border-color: #2c3152 !important;
+    background-color: #292d2a !important;
+    color:rgb(166, 175, 183);
+  }
+
+  .message.is-grey .message-body {
+    border-color: #364a8d !important;
+    background-color: #0b2133 !important;
+    color:rgb(166, 175, 183);
   }
 
   ul.users > li {
@@ -110,6 +143,9 @@
     }
     .message-body {
       font-size: 0.8rem;
+    }
+    .message-time {
+      font-size: 0.4rem;
     }
     .label {
       display: none;

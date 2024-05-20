@@ -51,7 +51,7 @@ func storeMessage(db *sql.DB, msg ChatMessage) {
 
 // Fetch the last n messages from the database
 func fetchMessages(db *sql.DB, count int) []ChatMessage {
-	rows, err := db.Query("SELECT username, message FROM messages ORDER BY timestamp ASC LIMIT ?", count)
+	rows, err := db.Query("SELECT username, message FROM ( SELECT * FROM messages ORDER BY timestamp DESC LIMIT ?) T1 ORDER BY timestamp ASC", count)
 	if err != nil {
 		log.Println(err)
 	}

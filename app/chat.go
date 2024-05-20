@@ -15,7 +15,7 @@ import (
 )
 
 const serverUsername = "💻 Server Message"
-const maxMsgsReloaded = 50
+const maxMsgsReloaded = 5
 
 // ChatMessage is the data structure used for chats & system messages
 type ChatMessage struct {
@@ -33,7 +33,7 @@ func initChat(db *sql.DB, renderer HTMLRenderer) sse.Broker[ChatMessage] {
 		broker.SendToGroup("*", ChatMessage{
 			Username: serverUsername,
 			Message:  fmt.Sprintf("User '%s' has joined the chat 💬", clientID),
-			System:   false,
+			System:   true,
 		})
 
 		broker.SendToGroup("*", ChatMessage{
@@ -54,7 +54,7 @@ func initChat(db *sql.DB, renderer HTMLRenderer) sse.Broker[ChatMessage] {
 		broker.SendToGroup("*", ChatMessage{
 			Username: serverUsername,
 			Message:  fmt.Sprintf("User '%s' has left the chat 👋", clientID),
-			System:   false,
+			System:   true,
 		})
 
 		broker.SendToGroup("*", ChatMessage{

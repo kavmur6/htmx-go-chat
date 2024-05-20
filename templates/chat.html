@@ -12,12 +12,13 @@
 
   <!-- Connection to SSE event stream is here -->
   <div hx-ext="sse" sse-connect="/chat-stream" id="chatarea">
-    <div class="topbox">
-      <p class="is-flex-grow-1"><i class="fa-solid fa-user-large"></i> '{{ .username }}'</p>
+    <!-- <div class="topbox"> -->
+      <!-- <p class="is-flex-grow-1"><i class="fa-solid fa-user-large"></i> '{{ .username }}'</p> -->
 
       <!-- SSE messages with type 'system' are picked up here -->
-      <span sse-swap="system">Connecting...</span>
-    </div>
+      <!-- <span sse-swap="system">Connecting...</span> -->
+    <!-- </div> -->
+    <div id="chat" sse-swap="chat" hx-swap="beforeend" hx-on::after-settle="this.scrollTo(0, this.scrollHeight);"></div>
 
     <form
       hx-post="/chat"
@@ -29,18 +30,40 @@
       <input type="hidden" name="username" value="{{ .username }}" />
 
       <div class="is-flex is-align-items-center">
-        <div class="field is-flex-grow-1 mr-4">
-          <textarea class="textarea is-info has-fixed-size" rows="2" name="message" placeholder="Say something" required></textarea>
+        <!-- <div class="tooltip" role="tooltip">
+          <emoji-picker></emoji-picker>
+        </div> -->
+        <div class="field is-flex-grow-1 mr-4 emojipicker-container">
+          <textarea class="textarea is-info has-fixed-size" rows="2" id="main-textarea" name="message" placeholder="" required></textarea>
+          <!-- <button class="button is-success is-medium mb-3" id="send"><i class="fa-solid fa-face-smile"></i></button> -->
         </div>
-        <div class="field">
-          <button class="button is-success is-medium mb-3" id="send"><i class="fa-solid fa-paper-plane"></i>&nbsp;SEND</button>
-        </div>
+        
       </div>
     </form>
 
     <!-- SSE messages with type 'chat' are picked up here -->
-    <div id="chat" sse-swap="chat" hx-swap="beforeend" hx-on::after-settle="this.scrollTo(0, this.scrollHeight);"></div>
   </div>
 </div>
+<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
+<script type="module">
+  import * as Popper from 'https://cdn.jsdelivr.net/npm/@popperjs/core@^2/dist/esm/index.js'
+  const button = document.querySelector('button')
+  const tooltip = document.querySelector('.tooltip')
+  Popper.createPopper(button, tooltip)
 
+  document.querySelector('button').onclick = () => {
+    tooltip.classList.toggle('shown')
+  }
+
+  document.querySelector('emoji-picker')
+  .addEventListener('emoji-click', event => {
+    console.log(event.detail); return false
+  });
+
+  document.querySelector('emoji-picker')
+  .addEventListener('emoji-click', event => {
+    console.log(event.detail); return false
+  });
+    
+</script>
 {{ end }}

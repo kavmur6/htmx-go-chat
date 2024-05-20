@@ -1,6 +1,6 @@
-module htmx-go-chat
+module goping
 
-go 1.21.3
+go 1.23
 
 require (
 	github.com/benc-uk/go-rest-api v1.0.10
