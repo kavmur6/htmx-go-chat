@@ -6,6 +6,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -16,6 +17,8 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 )
+
+var allowed = [2]string{"K", "S"}
 
 // Simply adds all the routes to the Echo router
 func addRoutes(e *echo.Echo, broker sse.Broker[ChatMessage], db *sql.DB) {
@@ -39,6 +42,18 @@ func addRoutes(e *echo.Echo, broker sse.Broker[ChatMessage], db *sql.DB) {
 		if username == "" {
 			return c.Render(http.StatusOK, "login", map[string]any{
 				"error": "Username can not be empty.",
+			})
+		}
+		fmt.Println("should be error: ", username)
+		var found = false
+		for _, user := range allowed {
+			if user == username {
+				found = true
+			}
+		}
+		if found == false {
+			return c.Render(http.StatusOK, "login", map[string]any{
+				"error": "wRong",
 			})
 		}
 
@@ -74,6 +89,9 @@ func addRoutes(e *echo.Echo, broker sse.Broker[ChatMessage], db *sql.DB) {
 	//
 	e.GET("/chat-stream", func(c echo.Context) error {
 		sess, _ := session.Get("session", c)
+		if sess.Values["username"] == nil {
+			return c.Render(http.StatusOK, "login", nil)
+		}
 		username := sess.Values["username"].(string)
 
 		return broker.Stream(username, c.Response().Writer, *c.Request())

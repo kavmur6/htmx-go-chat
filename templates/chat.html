@@ -19,23 +19,23 @@
       <!-- <span sse-swap="system">Connecting...</span> -->
     <!-- </div> -->
     <div id="chat" sse-swap="chat" hx-swap="beforeend" hx-on::after-settle="this.scrollTo(0, this.scrollHeight);"></div>
-
+    <div class="tooltip" role="tooltip">
+      <emoji-picker></emoji-picker>
+    </div>
     <form
       hx-post="/chat"
       hx-swap="none"
       onkeydown="if(event.keyCode == 13 && !event.shiftKey) { event.preventDefault(); return false }"
       hx-on::after-request="this.reset()"
-      hx-trigger="click from:#send,keyup[!shiftKey && keyCode==13]"
+      hx-trigger="keyup[!shiftKey && keyCode==13]"
     >
       <input type="hidden" name="username" value="{{ .username }}" />
 
       <div class="is-flex is-align-items-center">
-        <!-- <div class="tooltip" role="tooltip">
-          <emoji-picker></emoji-picker>
-        </div> -->
-        <div class="field is-flex-grow-1 mr-4 emojipicker-container">
+        
+        <div class="field is-flex-grow-1 mr-4 msg-container">
           <textarea class="textarea is-info has-fixed-size" rows="2" id="main-textarea" name="message" placeholder="" required></textarea>
-          <!-- <button class="button is-success is-medium mb-3" id="send"><i class="fa-solid fa-face-smile"></i></button> -->
+          <p class="button is-success is-medium mb-3 emjbtn"><i class="fa-solid fa-face-smile"></i></p>
         </div>
         
       </div>
@@ -47,23 +47,31 @@
 <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
 <script type="module">
   import * as Popper from 'https://cdn.jsdelivr.net/npm/@popperjs/core@^2/dist/esm/index.js'
-  const button = document.querySelector('button')
+  const emjbtn = document.querySelector('.emjbtn')
   const tooltip = document.querySelector('.tooltip')
-  Popper.createPopper(button, tooltip)
+  const textarea = document.querySelector('textarea')
+  Popper.createPopper(emjbtn, tooltip, {
+    placement: 'top-end',
+  });
 
-  document.querySelector('button').onclick = () => {
+  document.querySelector('.emjbtn').onclick = () => {
     tooltip.classList.toggle('shown')
   }
 
   document.querySelector('emoji-picker')
   .addEventListener('emoji-click', event => {
-    console.log(event.detail); return false
+    // console.log(event.detail.unicode);
+    insertEmoji(event.detail.unicode);
+    tooltip.classList.toggle('shown')
   });
 
-  document.querySelector('emoji-picker')
-  .addEventListener('emoji-click', event => {
-    console.log(event.detail); return false
-  });
+  const insertEmoji = (text) => {
+      const position = textarea.selectionStart;
+      const end = position + text.length;
+      textarea.setRangeText(text, position, end);
+      textarea.focus()
+      textarea.setSelectionRange(textarea.value.length,textarea.value.length);
+  };
     
 </script>
 {{ end }}
