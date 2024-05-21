@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"fmt"
 	"html/template"
+	"regexp"
 	"strings"
 	"time"
 
@@ -16,6 +17,9 @@ import (
 
 const serverUsername = "💻 Server Message"
 const maxMsgsReloaded = 5
+const URLRegex = `^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/|\/|\/\/)?[A-z0-9_-]*?[:]?[A-z0-9_-]*?[@]?[A-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$`
+
+var re = regexp.MustCompile(URLRegex)
 
 // ChatMessage is the data structure used for chats & system messages
 type ChatMessage struct {
@@ -71,15 +75,30 @@ func initChat(db *sql.DB, renderer HTMLRenderer) sse.Broker[ChatMessage] {
 			Data:  "",
 		}
 
+		preview, isLink, err := fetchMetadata(msg.Message)
+		if err != nil {
+			fmt.Printf("error fetchMetadata %v", err)
+		}
+		if isLink && preview.Image {
+			msg.Message = fmt.Sprintf(`<div class="imgcont">
+			<a href="%s"><img class="linkimg" src="%s"></a>
+			<p>%s</p>
+			</div>`, msg.Message, preview.Image, preview.Title)
+		}
 		// Render the message using HTML template
-		msgHTML, _ := renderer.RenderToString("message", map[string]any{
+		msgHTML, err := renderer.RenderToString("message", map[string]any{
 			"username": msg.Username,
 			"message":  template.HTML(msg.Message), // nolint:gosec
 			"time":     time.Now().Format("15:04:05"),
 			"isSelf":   clientID == msg.Username,
 			"isServer": msg.System || msg.Username == serverUsername,
+			// "isLink":       isLink,
+			// "previewTitle": string(preview.Title),
+			// "previewImage": preview.Image,
 		})
-
+		if err != nil {
+			fmt.Printf("Error in render to string: %v", err)
+		}
 		// Write the HTML response, but we need to strip out newlines from the template for SSE
 		sse.Data = strings.Replace(msgHTML, "\n", "", -1)
 
@@ -87,6 +106,10 @@ func initChat(db *sql.DB, renderer HTMLRenderer) sse.Broker[ChatMessage] {
 			sse.Event = "system"
 			sse.Data = msg.Message
 		}
+		// if isLink {
+		// 	sse.Event = "link"
+		// 	sse.Data = preview.Image
+		// }
 
 		return sse
 	}

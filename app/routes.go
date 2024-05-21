@@ -6,7 +6,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -44,7 +43,6 @@ func addRoutes(e *echo.Echo, broker sse.Broker[ChatMessage], db *sql.DB) {
 				"error": "Username can not be empty.",
 			})
 		}
-		fmt.Println("should be error: ", username)
 		var found = false
 		for _, user := range allowed {
 			if user == username {
@@ -53,7 +51,7 @@ func addRoutes(e *echo.Echo, broker sse.Broker[ChatMessage], db *sql.DB) {
 		}
 		if found == false {
 			return c.Render(http.StatusOK, "login", map[string]any{
-				"error": "wRong",
+				"error": "wrong",
 			})
 		}
 

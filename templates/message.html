@@ -12,12 +12,14 @@
     hx-trigger="load delay:2s"
     hx-swap="delete swap:0.5s"
   {{ end }}>
+  <!-- log {{ .previewImage }} -->
 
   <!-- <div class="message-header is-flex is-size-7">
     <p>{{ .username }}</p>
     <p>{{ .time }}</p>
   </div> -->
   <div class="message-body p-3">{{ .message }}
+    <!-- <img _="if {{ .isLink }} show" src={{ .previewImage }}> -->
     <!-- <p>{{ .username }}</p> -->
     <div class="message-time">{{ .time }}</div>
   </div>
