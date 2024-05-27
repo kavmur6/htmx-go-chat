@@ -35,7 +35,7 @@ func fetchMetadata(msg string) (preview *HTMLMeta, isLink bool, err error) {
 	// 	return
 	// }
 	if !validateURL(msg) {
-		return preview, false, fmt.Errorf("Not a link %s", msg)
+		return preview, false, nil
 	}
 
 	if _, err = url.Parse(msg); err != nil {

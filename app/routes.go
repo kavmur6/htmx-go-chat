@@ -6,10 +6,12 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/benc-uk/go-rest-api/pkg/sse"
 
@@ -87,10 +89,21 @@ func addRoutes(e *echo.Echo, broker sse.Broker[ChatMessage], db *sql.DB) {
 	//
 	e.GET("/chat-stream", func(c echo.Context) error {
 		sess, _ := session.Get("session", c)
+		fmt.Printf("\n sess q %s \n", c.QueryParam("q"))
 		if sess.Values["username"] == nil {
 			return c.Render(http.StatusOK, "login", nil)
 		}
 		username := sess.Values["username"].(string)
+
+		activeUsers := broker.GetClients()
+		for _, user := range activeUsers {
+			if user == username {
+				return c.Render(http.StatusOK, "login", nil)
+				// return c.Render(http.StatusOK, "login", map[string]any{
+				// 	"error": "open on another tab",
+				// })
+			}
+		}
 
 		return broker.Stream(username, c.Response().Writer, *c.Request())
 	})
@@ -101,6 +114,7 @@ func addRoutes(e *echo.Echo, broker sse.Broker[ChatMessage], db *sql.DB) {
 	e.POST("/chat", func(c echo.Context) error {
 		msgText := c.FormValue("message")
 		username := c.FormValue("username")
+		loc, _ := time.LoadLocation("Asia/Kolkata")
 
 		// Trim the message and handle newlines
 		msgText = strings.TrimSpace(msgText)
@@ -111,8 +125,9 @@ func addRoutes(e *echo.Echo, broker sse.Broker[ChatMessage], db *sql.DB) {
 		}
 
 		msg := ChatMessage{
-			Username: username,
-			Message:  msgText,
+			Username:  username,
+			Message:   msgText,
+			Timestamp: time.Now().In(loc).Format("15:04:05"),
 		}
 
 		// Push the new chat message to broker & store

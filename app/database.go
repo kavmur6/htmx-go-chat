@@ -43,7 +43,7 @@ func openDB() *sql.DB {
 // Store a message in the database
 func storeMessage(db *sql.DB, msg ChatMessage) {
 	// TODO: Add some kind of cleanup to remove old messages
-	_, err := db.Exec("INSERT INTO messages (username, message) VALUES (?, ?)", msg.Username, msg.Message)
+	_, err := db.Exec("INSERT INTO messages (username, message, timestamp) VALUES (?, ?, ?)", msg.Username, msg.Message, msg.Timestamp)
 	if err != nil {
 		log.Println("DB error: ", err)
 	}
@@ -51,7 +51,7 @@ func storeMessage(db *sql.DB, msg ChatMessage) {
 
 // Fetch the last n messages from the database
 func fetchMessages(db *sql.DB, count int) []ChatMessage {
-	rows, err := db.Query("SELECT username, message FROM ( SELECT * FROM messages ORDER BY timestamp DESC LIMIT ?) T1 ORDER BY timestamp ASC", count)
+	rows, err := db.Query("SELECT username, message, timestamp FROM ( SELECT * FROM messages ORDER BY timestamp DESC LIMIT ?) T1 ORDER BY timestamp ASC", count)
 	if err != nil {
 		log.Println(err)
 	}
@@ -59,16 +59,17 @@ func fetchMessages(db *sql.DB, count int) []ChatMessage {
 	messages := []ChatMessage{}
 
 	for rows.Next() {
-		var username, message string
+		var username, message, timestamp string
 
-		err = rows.Scan(&username, &message)
+		err = rows.Scan(&username, &message, &timestamp)
 		if err != nil {
 			log.Println(err)
 		}
 
 		messages = append(messages, ChatMessage{
-			Username: username,
-			Message:  message,
+			Username:  username,
+			Message:   message,
+			Timestamp: timestamp,
 		})
 	}
 

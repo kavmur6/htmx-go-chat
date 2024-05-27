@@ -10,9 +10,9 @@ import (
 	"html/template"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/benc-uk/go-rest-api/pkg/sse"
+	"github.com/google/uuid"
 )
 
 const serverUsername = "💻 Server Message"
@@ -23,9 +23,11 @@ var re = regexp.MustCompile(URLRegex)
 
 // ChatMessage is the data structure used for chats & system messages
 type ChatMessage struct {
-	Username string // Username of the sender
-	Message  string // Message body
-	System   bool   // Is this a special system message?
+	Username  string // Username of the sender
+	Message   string // Message body
+	Timestamp string
+	System    bool // Is this a special system message?
+	FromDB    bool
 }
 
 func initChat(db *sql.DB, renderer HTMLRenderer) sse.Broker[ChatMessage] {
@@ -49,7 +51,12 @@ func initChat(db *sql.DB, renderer HTMLRenderer) sse.Broker[ChatMessage] {
 		// Send last 50 messages from store
 		msgs := fetchMessages(db, maxMsgsReloaded)
 		for _, msg := range msgs {
-			broker.SendToClient(clientID, msg)
+			broker.SendToClient(clientID, ChatMessage{
+				Username:  msg.Username,
+				Message:   msg.Message,
+				Timestamp: msg.Timestamp,
+				FromDB:    true,
+			})
 		}
 	}
 
@@ -73,13 +80,14 @@ func initChat(db *sql.DB, renderer HTMLRenderer) sse.Broker[ChatMessage] {
 		sse := sse.SSE{
 			Event: "chat",
 			Data:  "",
+			ID:    uuid.New().String(),
 		}
 
 		preview, isLink, err := fetchMetadata(msg.Message)
 		if err != nil {
 			fmt.Printf("error fetchMetadata %v", err)
 		}
-		if isLink && preview.Image {
+		if isLink && preview.Image != "" {
 			msg.Message = fmt.Sprintf(`<div class="imgcont">
 			<a href="%s"><img class="linkimg" src="%s"></a>
 			<p>%s</p>
@@ -89,12 +97,9 @@ func initChat(db *sql.DB, renderer HTMLRenderer) sse.Broker[ChatMessage] {
 		msgHTML, err := renderer.RenderToString("message", map[string]any{
 			"username": msg.Username,
 			"message":  template.HTML(msg.Message), // nolint:gosec
-			"time":     time.Now().Format("15:04:05"),
+			"time":     msg.Timestamp,
 			"isSelf":   clientID == msg.Username,
 			"isServer": msg.System || msg.Username == serverUsername,
-			// "isLink":       isLink,
-			// "previewTitle": string(preview.Title),
-			// "previewImage": preview.Image,
 		})
 		if err != nil {
 			fmt.Printf("Error in render to string: %v", err)
@@ -106,12 +111,10 @@ func initChat(db *sql.DB, renderer HTMLRenderer) sse.Broker[ChatMessage] {
 			sse.Event = "system"
 			sse.Data = msg.Message
 		}
-		// if isLink {
-		// 	sse.Event = "link"
-		// 	sse.Data = preview.Image
-		// }
+		fmt.Printf("\n sse: %+v \n", sse)
 
 		return sse
+
 	}
 
 	return *broker
